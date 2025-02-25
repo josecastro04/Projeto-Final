@@ -1,55 +1,132 @@
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox
 import sys
-import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QHBoxLayout
+import numpy as np
+from PyQt5.QtCore import Qt
+
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Projeto Final")
         self.setGeometry(100, 100, 1600, 600)
-        
+
+       
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-         
-        layout = QHBoxLayout(central_widget)
-             
-        self.figure1, self.ax1 = plt.subplots()
-        canvas1 = FigureCanvas(self.figure1)    
-        
-        layout.addWidget(canvas1)
-           
-        y_values = [1, 2, 3, 4, 5] 
-        for y in y_values:
-            self.ax1.axhline(y=y, color='blue', linestyle='-')
-        
-        x_values = [1, 2, 3, 4, 5] 
-        for x in x_values:
-            self.ax1.axvline(x=x, color='red', linestyle='-')
-        
-        canvas1.draw()
-        
-        y_cosseno = np.cos(y_values)  
-        x_cosseno = np.cos(x_values)
 
+        
+        self.layout = QVBoxLayout(central_widget)
+
+        
+        menubar = QMenuBar(self)
+        self.setMenuBar(menubar)
+        menubar.setStyleSheet("font-size: 18px;")
+
+       
+        menu = menubar.addMenu("Figura")
+        self.selected_figure_option = None
+
+        menu_fx = menubar.addMenu("f(x)")
+        self.selected_fx_option = None
+
+        
+        self.button = QPushButton("Começar", self)
+        self.button.clicked.connect(self.check_options)
+        menubar.setCornerWidget(self.button, corner=Qt.TopRightCorner)
+
+        
+        opcoes_figura = ["Retas", "Quadrado", "Circunferência", "Desenhar"]
+        for opcao in opcoes_figura:
+            action = QAction(opcao, self)
+            action.triggered.connect(lambda checked, opcao=opcao: self.selecionar_figura(opcao))
+            menu.addAction(action)
+
+        
+        fx_opcoes = ["sen(x)", "cos(x)", "exp(x)", "1/2 (1 + 1/x)"]
+        for fx_opcao in fx_opcoes:
+            action = QAction(fx_opcao, self)
+            action.triggered.connect(lambda checked, fx_opcao=fx_opcao: self.selecionar_fx(fx_opcao))
+            menu_fx.addAction(action)
+
+        
+        self.show()
+
+    def selecionar_figura(self, opcao):
+        self.selected_figure_option = opcao
+
+    def selecionar_fx(self, fx_opcao):
+        self.selected_fx_option = fx_opcao
+
+    def check_options(self):
+        if self.selected_figure_option and self.selected_fx_option:
+            self.update_window()
+        else:
+            QMessageBox.critical(self, "Erro", "Selecione uma opção de cada menu.")
+
+    def update_window(self):
+        
+        for i in reversed(range(self.layout.count())):
+            widget = self.layout.itemAt(i).widget()
+            if widget is not None:
+                widget.deleteLater()
+
+        
+        self.figure1, self.ax1 = plt.subplots()
+        canvas1 = FigureCanvas(self.figure1)
+        self.layout.addWidget(canvas1)
+
+        if self.selected_figure_option == "Retas":
+            y_values = np.linspace(-5, 5, 10)
+            for y in y_values:
+                self.ax1.axhline(y=y, color='blue', linestyle='-')
+
+            x_values = np.linspace(-5, 5, 10)
+            for x in x_values:
+                self.ax1.axvline(x=x, color='red', linestyle='-')
+
+        elif self.selected_figure_option == "Quadrado":
+            square_x = [0, 1, 1, 0, 0]
+            square_y = [0, 0, 1, 1, 0]
+            self.ax1.plot(square_x, square_y, color='green', linestyle='-', linewidth=2)
+
+        elif self.selected_figure_option == "Circunferência":
+            theta = np.linspace(0, 2 * np.pi, 100)
+            x_circle = np.cos(theta)
+            y_circle = np.sin(theta)
+            self.ax1.plot(x_circle, y_circle, color='purple', linewidth=2)
+
+        elif self.selected_figure_option == "Desenhar":
+            self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
+
+        canvas1.draw()
+
+        
         self.figure2, self.ax2 = plt.subplots()
         canvas2 = FigureCanvas(self.figure2)
-        
-        layout.addWidget(canvas2)
-        
-        self.ax2.plot(y_values, y_cosseno, label='cos(y) para as linhas azuis', color='blue', marker='o')
-        self.ax2.plot(x_values, x_cosseno, label='cos(x) para as linhas vermelhas', color='red', marker='x')
-          
+        self.layout.addWidget(canvas2)
+
+        x = np.linspace(-5, 5, 100)
+
+        if self.selected_fx_option == "sen(x)":
+            self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
+        elif self.selected_fx_option == "cos(x)":
+            self.ax2.plot(x, np.cos(x), label="cos(x)", color='red')
+        elif self.selected_fx_option == "exp(x)":
+            self.ax2.plot(x, np.exp(x), label="exp(x)", color='green')
+        elif self.selected_fx_option == "1/2 (1 + 1/x)":
+            x_valid = x[x != 0]  # Evita divisão por zero
+            self.ax2.plot(x_valid, 0.5 * (1 + 1 / x_valid), label="1/2 (1 + 1/x)", color='purple')
+
         self.ax2.legend()
-            
         canvas2.draw()
 
 def main():
     app = QApplication(sys.argv)
     window = MainWindow()
-    window.show()
     sys.exit(app.exec_())
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
