@@ -4,8 +4,8 @@ import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
 from PyQt5.QtCore import Qt
-
-
+import circumference as c
+import rectangle as r
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -16,7 +16,6 @@ class MainWindow(QMainWindow):
        
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-
         
         self.layout = QVBoxLayout(central_widget)
 
@@ -52,8 +51,8 @@ class MainWindow(QMainWindow):
             menu_fx.addAction(action)
 
         
-        self.show()
-
+        self.show() 
+   
     def selecionar_figura(self, opcao):
         self.selected_figure_option = opcao
 
@@ -88,15 +87,18 @@ class MainWindow(QMainWindow):
                 self.ax1.axvline(x=x, color='red', linestyle='-')
 
         elif self.selected_figure_option == "Quadrado":
-            square_x = [0, 1, 1, 0, 0]
-            square_y = [0, 0, 1, 1, 0]
-            self.ax1.plot(square_x, square_y, color='green', linestyle='-', linewidth=2)
+            self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red') 
+                  
+            canvas1.mpl_connect("button_press_event", self.rectangle.on_button_press)
+            canvas1.mpl_connect("button_release_event", self.rectangle.on_button_release)
+            canvas1.mpl_connect("motion_notify_event", self.rectangle.on_mouse_move)
 
         elif self.selected_figure_option == "Circunferência":
-            theta = np.linspace(0, 2 * np.pi, 100)
-            x_circle = np.cos(theta)
-            y_circle = np.sin(theta)
-            self.ax1.plot(x_circle, y_circle, color='purple', linewidth=2)
+            self.circumference = c.Circumference(self.ax1, 0.5, 0.5, 0.2, 'red')
+
+            canvas1.mpl_connect("button_press_event", self.circumference.on_button_press)
+            canvas1.mpl_connect("button_release_event", self.circumference.on_button_release)
+            canvas1.mpl_connect("motion_notify_event", self.circumference.on_mouse_move)
 
         elif self.selected_figure_option == "Desenhar":
             self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
