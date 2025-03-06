@@ -1,8 +1,9 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox
+from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox, QLabel, QLineEdit, QHBoxLayout
 import sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
+import math
 from PyQt5.QtCore import Qt
 import circumference as c
 import rectangle as r
@@ -11,78 +12,111 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Projeto Final")
-        self.setGeometry(100, 100, 1600, 600)
+        self.setGeometry(100, 100, 600, 600)
 
-       
         central_widget = QWidget(self)
         self.setCentralWidget(central_widget)
-        
         self.layout = QVBoxLayout(central_widget)
 
-        
         menubar = QMenuBar(self)
         self.setMenuBar(menubar)
         menubar.setStyleSheet("font-size: 18px;")
 
-       
         menu = menubar.addMenu("Figura")
         self.selected_figure_option = None
-
+        
         menu_fx = menubar.addMenu("f(x)")
         self.selected_fx_option = None
-
         
         self.button = QPushButton("Começar", self)
         self.button.clicked.connect(self.check_options)
         menubar.setCornerWidget(self.button, corner=Qt.TopRightCorner)
 
-        
         opcoes_figura = ["Retas", "Quadrado", "Circunferência", "Desenhar"]
         for opcao in opcoes_figura:
             action = QAction(opcao, self)
             action.triggered.connect(lambda checked, opcao=opcao: self.selecionar_figura(opcao))
             menu.addAction(action)
 
-        
         fx_opcoes = ["sen(x)", "cos(x)", "exp(x)", "1/2 (1 + 1/x)"]
         for fx_opcao in fx_opcoes:
             action = QAction(fx_opcao, self)
             action.triggered.connect(lambda checked, fx_opcao=fx_opcao: self.selecionar_fx(fx_opcao))
             menu_fx.addAction(action)
 
-        
+        self.label = QLabel("Figura:  F(x):", self)
+        self.layout.addWidget(self.label)
+
         self.show() 
-   
+        self.x_input = QLineEdit(self)
+        self.x_input.setPlaceholderText("Digite os valores de X (ex: 0, pi, 2*pi, ...)")
+        
+        self.y_input = QLineEdit(self)
+        self.y_input.setPlaceholderText("Digite os valores de Y (ex: pi, 1, 2*pi, ...)")
+        
+        
+        input_layout = QHBoxLayout()
+        input_layout.addWidget(QLabel("Valores de X:"))
+        input_layout.addWidget(self.x_input)
+        input_layout.addWidget(QLabel("Valores de Y:"))
+        input_layout.addWidget(self.y_input)
+
+        self.layout.addLayout(input_layout)
+
+        self.show()
     def selecionar_figura(self, opcao):
         self.selected_figure_option = opcao
+        self.update_label()
 
     def selecionar_fx(self, fx_opcao):
         self.selected_fx_option = fx_opcao
+        self.update_label()
+
+    def update_label(self):
+        figura_text = f"Figura: {self.selected_figure_option}" if self.selected_figure_option else "Figura:"
+        fx_text = f"F(x): {self.selected_fx_option}" if self.selected_fx_option else "F(x):"
+        self.label.setText(f"{figura_text}  {fx_text}")
 
     def check_options(self):
         if self.selected_figure_option and self.selected_fx_option:
-            self.update_window()
+            try:
+                self.update_window()
+            except Exception as e:
+                QMessageBox.critical(self, "Erro", f"Erro ao atualizar a janela: {str(e)}")
         else:
             QMessageBox.critical(self, "Erro", "Selecione uma opção de cada menu.")
+
+    def parse_input(self, input_str):
+       
+        try:
+    
+            input_str = input_str.replace("pi", str(math.pi))
+            # Avalia a string como expressão matemática
+            return np.array([float(eval(val)) for val in input_str.split(',')])
+        except Exception as e:
+            raise ValueError(f"Erro ao processar a entrada: {e}")
 
     def update_window(self):
         
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
-            if widget is not None:
+            if widget is not None and widget != self.label:
                 widget.deleteLater()
 
+        
+        x_values = self.parse_input(self.x_input.text())  
+        y_values = self.parse_input(self.y_input.text())  
+        x_values = np.arange(0, self.parse_input(self.x_input.text()), 0.1)  
+        y_values = np.arange(0,self.parse_input(self.y_input.text()), 0.1)  
         
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
 
         if self.selected_figure_option == "Retas":
-            y_values = np.linspace(-5, 5, 10)
             for y in y_values:
                 self.ax1.axhline(y=y, color='blue', linestyle='-')
 
-            x_values = np.linspace(-5, 5, 10)
             for x in x_values:
                 self.ax1.axvline(x=x, color='red', linestyle='-')
 
@@ -119,7 +153,7 @@ class MainWindow(QMainWindow):
         elif self.selected_fx_option == "exp(x)":
             self.ax2.plot(x, np.exp(x), label="exp(x)", color='green')
         elif self.selected_fx_option == "1/2 (1 + 1/x)":
-            x_valid = x[x != 0]  # Evita divisão por zero
+            x_valid = x[x != 0]  
             self.ax2.plot(x_valid, 0.5 * (1 + 1 / x_valid), label="1/2 (1 + 1/x)", color='purple')
 
         self.ax2.legend()
