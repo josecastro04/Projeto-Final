@@ -46,24 +46,8 @@ class MainWindow(QMainWindow):
 
         self.label = QLabel("Figura:  F(x):", self)
         self.layout.addWidget(self.label)
-
-        self.show() 
-        self.x_input = QLineEdit(self)
-        self.x_input.setPlaceholderText("Digite os valores de X (ex: 0, pi, 2*pi, ...)")
-        
-        self.y_input = QLineEdit(self)
-        self.y_input.setPlaceholderText("Digite os valores de Y (ex: pi, 1, 2*pi, ...)")
-        
-        
-        input_layout = QHBoxLayout()
-        input_layout.addWidget(QLabel("Valores de X:"))
-        input_layout.addWidget(self.x_input)
-        input_layout.addWidget(QLabel("Valores de Y:"))
-        input_layout.addWidget(self.y_input)
-
-        self.layout.addLayout(input_layout)
-
         self.show()
+
     def selecionar_figura(self, opcao):
         self.selected_figure_option = opcao
         self.update_label()
@@ -103,12 +87,6 @@ class MainWindow(QMainWindow):
             if widget is not None and widget != self.label:
                 widget.deleteLater()
 
-        
-        x_values = self.parse_input(self.x_input.text())  
-        y_values = self.parse_input(self.y_input.text())  
-        x_values = np.arange(0, self.parse_input(self.x_input.text()), 0.1)  
-        y_values = np.arange(0,self.parse_input(self.y_input.text()), 0.1)  
-        
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
@@ -121,15 +99,24 @@ class MainWindow(QMainWindow):
                 self.ax1.axvline(x=x, color='red', linestyle='-')
 
         elif self.selected_figure_option == "Quadrado":
-            self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red') 
-                  
+            self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
+     
             canvas1.mpl_connect("button_press_event", self.rectangle.on_button_press)
             canvas1.mpl_connect("button_release_event", self.rectangle.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.rectangle.on_mouse_move)
 
         elif self.selected_figure_option == "Circunferência":
             self.circumference = c.Circumference(self.ax1, 0.5, 0.5, 0.2, 'red')
+            input_layout = QHBoxLayout()
+            input_layout.addWidget(QLabel("Centro:"))
+            center_input, radius_input = self.circumference.get_input()
+            input_layout.addWidget(center_input)
 
+            input_layout.addWidget(QLabel("Raio:"))
+            input_layout.addWidget(radius_input)
+
+            self.layout.addLayout(input_layout)
+            self.show();
             canvas1.mpl_connect("button_press_event", self.circumference.on_button_press)
             canvas1.mpl_connect("button_release_event", self.circumference.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.circumference.on_mouse_move)
