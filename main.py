@@ -7,10 +7,12 @@ import math
 from PyQt5.QtCore import Qt
 import circumference as c
 import rectangle as r
+import graphic as g
 
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
+        self.graph = g.Graphic()
         self.setWindowTitle("Projeto Final")
         self.setGeometry(100, 100, 600, 600)
 
@@ -116,7 +118,7 @@ class MainWindow(QMainWindow):
             input_layout.addWidget(radius_input)
 
             self.layout.addLayout(input_layout)
-            self.show();
+            self.show()
             canvas1.mpl_connect("button_press_event", self.circumference.on_button_press)
             canvas1.mpl_connect("button_release_event", self.circumference.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.circumference.on_mouse_move)
@@ -132,24 +134,60 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(canvas2)
 
         x = np.linspace(-5, 5, 100)
+        
 
         if self.selected_fx_option == "sen(x)":
-            self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
+            if self.selected_figure_option == "Circunferência":
+                x,y = self.circumference.get_points()
+                xs,ys = self.graph.calcular_sen(x, y)
+                self.ax2.plot(xs, ys, label="sen(z)", color='purple')
+            elif self.selected_figure_option == "Quadrado":
+                x ,y = self.rectangle.get_points()
+                xs,ys = self.graph.calcular_sen(x, y)
+                self.ax2.plot(xs, ys, label="sen(z)", color='purple')
+            else:   
+                self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
+                
+
         elif self.selected_fx_option == "cos(x)":
-            self.ax2.plot(x, np.cos(x), label="cos(x)", color='red')
+            if self.selected_figure_option == "Circunferência":
+                x,y = self.circumference.get_points()
+                xs,ys = self.graph.calcular_cos(x,y)
+                self.ax2.plot(xs, ys, label="cos(z)", color='green')
+            elif self.selected_figure_option == "Quadrado":
+                x ,y = self.rectangle.get_points()
+                xs,ys = self.graph.calcular_cos(x,y)
+                self.ax2.plot(xs, ys, label="cos(z)", color='green')
+            else:
+                self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
+
+        
         elif self.selected_fx_option == "exp(x)":
-            self.ax2.plot(x, np.exp(x), label="exp(x)", color='green')
+            if self.selected_figure_option == "Circunferência":
+                x,y = self.circumference.get_points()
+                xs,ys = self.graph.calcular_exp(x,y)
+                self.ax2.plot(xs, ys, label="exp(z)", color='red')
+            elif self.selected_figure_option == "Quadrado":
+                x ,y = self.rectangle.get_points()
+                xs,ys = self.graph.calcular_exp(x,y)
+                self.ax2.plot(xs, ys, label="exp(z)", color='red')
+            else:
+                self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
+
+
         elif self.selected_fx_option == "z + 1/z":
-            x, y = self.circumference.get_points()
-            xs = []
-            ys = []
-            for i in range(len(x)):
-                xs.append(x[i] * (x[i] ** 2 + y[i] ** 2 + 1)/(x[i] ** 2 + y[i] ** 2))
-                ys.append(y[i] * (x[i] ** 2 + y[i] ** 2 - 1)/(x[i] ** 2 + y[i] ** 2))
+            if self.selected_figure_option == "Circunferência":
+                x,y = self.circumference.get_points()
+                xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
+                self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
+            elif self.selected_figure_option == "Quadrado":
+                x ,y = self.rectangle.get_points()
+                xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
+                self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
+            else:
+                self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
 
-            self.ax2.plot(xs, ys, label="z + 1/z", color='purple')
-
-        "self.ax2.legend()"
+        self.ax2.legend()
         canvas2.draw()
 
 def main():

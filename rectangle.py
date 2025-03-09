@@ -14,7 +14,9 @@ class Rect:
         self.rectangle = Rectangle((self.x, self.y), self.width, self.height, color=self.color, fill=False)
         self.ax.add_patch(self.rectangle)
         
-        self.center_x, self.center_y = self.rectangle.get_center()
+        self.center_x = self.x + self.width / 2
+        self.center_y = self.y + self.height / 2
+
         self.center_point, = self.ax.plot(self.center_x, self.center_y, 'or')
 
         self.point_x = self.x
@@ -83,5 +85,25 @@ class Rect:
 
         plt.draw()
 
+    def get_points(self):
+        
+        perimeter = 2 * (self.width + self.height)
+        t = np.linspace(0, perimeter, 100)
+        x = []
+        y = []
 
+        for i in t:
+            if i < self.width:
+                x.append(self.x + i)
+                y.append(self.y)
+            elif i < self.width + self.height:
+                x.append(self.x + self.width)
+                y.append(self.y + (i - self.width))
+            elif i < 2 * self.width + self.height:
+                x.append(self.x + self.width - (i - self.width - self.height))
+                y.append(self.y + self.height)
+            else:
+                x.append(self.x)
+                y.append(self.y + self.height - (i - 2 * self.width - self.height))
 
+        return np.array(x), np.array(y)
