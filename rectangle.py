@@ -86,7 +86,6 @@ class Rect:
         plt.draw()
 
     def get_points(self):
-        
         perimeter = 2 * (self.width + self.height)
         t = np.linspace(0, perimeter, 100)
         x = []

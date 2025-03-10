@@ -8,6 +8,8 @@ from PyQt5.QtCore import Qt
 import circumference as c
 import rectangle as r
 import graphic as g
+import lines as l
+
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -77,7 +79,7 @@ class MainWindow(QMainWindow):
         try:
     
             input_str = input_str.replace("pi", str(math.pi))
-            # Avalia a string como expressão matemática
+        
             return np.array([float(eval(val)) for val in input_str.split(',')])
         except Exception as e:
             raise ValueError(f"Erro ao processar a entrada: {e}")
@@ -94,11 +96,9 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(canvas1)
 
         if self.selected_figure_option == "Retas":
-            for y in y_values:
-                self.ax1.axhline(y=y, color='blue', linestyle='-')
-
-            for x in x_values:
-                self.ax1.axvline(x=x, color='red', linestyle='-')
+            self.lines = l.Lines(self.ax1, -5, 5, 0.5, 'red', 'blue')
+           
+        
 
         elif self.selected_figure_option == "Quadrado":
             self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
@@ -145,7 +145,14 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
-            else:   
+            elif self.selected_figure_option == "Retas":   
+                x,y = self.lines.get_pointsvert()
+                xs,ys = self.graph.calcular_sen(x,y)
+                self.ax2.plot(xs, ys, label="sen(z)", color='red')
+                z,m = self.lines.get_pointshor()
+                zs,ms = self.graph.calcular_sen(z,m)
+                self.ax2.plot(zs, ms, label="sen(z)", color='blue')
+            else:
                 self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
                 
 
@@ -158,6 +165,13 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
+            elif self.selected_figure_option == "Retas":
+                x,y = self.lines.get_pointsvert()
+                xs,ys = self.graph.calcular_cos(x,y)
+                self.ax2.plot(xs, ys, label="cos(z)", color='red')
+                z,m = self.lines.get_pointshor()
+                zs,ms = self.graph.calcular_cos(z,m)
+                self.ax2.plot(zs, ms, label="cos(z)", color='blue')
             else:
                 self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
 
@@ -171,6 +185,13 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
+            elif self.selected_figure_option == "Retas":
+                x,y = self.lines.get_pointsvert()
+                xs,ys = self.graph.calcular_exp(x,y)
+                self.ax2.plot(xs, ys, label="exp(z)", color='red')
+                z,m = self.lines.get_pointshor()
+                zs,ms = self.graph.calcular_exp(z,m)
+                self.ax2.plot(zs, ms, label="exp(z)", color='blue')
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
 
@@ -184,6 +205,13 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
+            elif self.selected_figure_option == "Retas":
+                x,y = self.lines.get_pointsvert()
+                xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
+                self.ax2.plot(xs, ys, label="z + 1/z", color='red')
+                z,m = self.lines.get_pointshor()
+                zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)
+                self.ax2.plot(zs, ms, label="z + 1/z", color='blue')
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
 
