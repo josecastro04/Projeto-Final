@@ -96,7 +96,12 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(canvas1)
 
         if self.selected_figure_option == "Retas":
-            self.lines = l.Lines(self.ax1, -5, 5, 0.5, 'red', 'blue')
+            self.linesvert = l.Lines(self.ax1, -5,5, 0.5, 'red')
+            self.lineshor = l.Lines(self.ax1, -5,5, 0.5, 'blue')
+            self.linesvert.create_vertical_lines()
+            self.lineshor.create_horizontal_lines()
+            
+            
            
         
 
@@ -127,11 +132,12 @@ class MainWindow(QMainWindow):
             self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
 
         canvas1.draw()
-
+        
         
         self.figure2, self.ax2 = plt.subplots()
         canvas2 = FigureCanvas(self.figure2)
         self.layout.addWidget(canvas2)
+        
 
         x = np.linspace(-5, 5, 100)
         
@@ -146,10 +152,10 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
             elif self.selected_figure_option == "Retas":   
-                x,y = self.lines.get_pointsvert()
+                x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_sen(x,y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='red')
-                z,m = self.lines.get_pointshor()
+                z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_sen(z,m)
                 self.ax2.plot(zs, ms, label="sen(z)", color='blue')
             else:
@@ -166,10 +172,10 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
             elif self.selected_figure_option == "Retas":
-                x,y = self.lines.get_pointsvert()
+                x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='red')
-                z,m = self.lines.get_pointshor()
+                z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_cos(z,m)
                 self.ax2.plot(zs, ms, label="cos(z)", color='blue')
             else:
@@ -186,11 +192,12 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
             elif self.selected_figure_option == "Retas":
-                x,y = self.lines.get_pointsvert()
-                xs,ys = self.graph.calcular_exp(x,y)
+                x,y = self.linesvert.get_pointsvert()
+                xs,ys = self.graph.calcular_exp(x,y)     
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
-                z,m = self.lines.get_pointshor()
-                zs,ms = self.graph.calcular_exp(z,m)
+                plt.gca().set_aspect('equal', adjustable='box')
+                z,m = self.lineshor.get_pointshor()
+                zs,ms = self.graph.calcular_exp(z,m)    
                 self.ax2.plot(zs, ms, label="exp(z)", color='blue')
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
