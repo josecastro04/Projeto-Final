@@ -51,6 +51,9 @@ class MainWindow(QMainWindow):
         self.label = QLabel("Figura:  F(x):", self)
         self.layout.addWidget(self.label)
         self.show()
+        
+        self.figure1 = None
+        self.figure2 = None
 
     def selecionar_figura(self, opcao):
         self.selected_figure_option = opcao
@@ -85,11 +88,25 @@ class MainWindow(QMainWindow):
             raise ValueError(f"Erro ao processar a entrada: {e}")
 
     def update_window(self):
+        #fechar figuras antigas se existirem
+        if self.figure1 is not None and self.figure2 is not None:
+            plt.close(self.figure1)
+            plt.close(self.figure2)
         
+        #remover widgets anteriores, exceto o label principal
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget is not None and widget != self.label:
-                widget.deleteLater()
+                widget.setParent(None)
+
+        #Remover o layout de inputs caso exista
+        if hasattr(self, 'input_layout') and self.input_layout is not None:
+            while self.input_layout.count():
+                item = self.input_layout.takeAt(0)
+                if item.widget():
+                    item.widget().deleteLater()
+            self.layout.removeItem(self.input_layout)
+            self.input_layout = None
 
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
@@ -114,15 +131,15 @@ class MainWindow(QMainWindow):
 
         elif self.selected_figure_option == "Circunferência":
             self.circumference = c.Circumference(self.ax1, -0.1, 0.5, 1, 'red')
-            input_layout = QHBoxLayout()
-            input_layout.addWidget(QLabel("Centro:"))
+            self.input_layout = QHBoxLayout()
+            self.input_layout.addWidget(QLabel("Centro:"))
             center_input, radius_input = self.circumference.get_input()
-            input_layout.addWidget(center_input)
+            self.input_layout.addWidget(center_input)
 
-            input_layout.addWidget(QLabel("Raio:"))
-            input_layout.addWidget(radius_input)
+            self.input_layout.addWidget(QLabel("Raio:"))
+            self.input_layout.addWidget(radius_input)
 
-            self.layout.addLayout(input_layout)
+            self.layout.addLayout(self.input_layout)
             self.show()
             canvas1.mpl_connect("button_press_event", self.circumference.on_button_press)
             canvas1.mpl_connect("button_release_event", self.circumference.on_button_release)

@@ -12,4 +12,4 @@ class Graphic:
         return np.exp(x) * np.cos(y), np.exp(x) * np.sin(y)
 
     def calcular_z_mais_1_por_z(self, x, y):
-        return x * (x ** 2 + y ** 2 + 1) / (x ** 2 + y ** 2), y[i] * (x ** 2 + y ** 2 - 1) / (x ** 2 + y ** 2)
+        return x * (x ** 2 + y ** 2 + 1) / (x ** 2 + y ** 2), y * (x ** 2 + y ** 2 - 1) / (x ** 2 + y ** 2)

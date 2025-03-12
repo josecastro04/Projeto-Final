@@ -113,6 +113,6 @@ class Circumference:
         plt.draw()
 
     def get_points(self):
-        t = np.linspace(0, 2 * np.pi, 200)
-        x, y = self.x + np.cos(t) * self.radius, self.y + np.sin(t) * self.radius
-        return x, y
+        t = np.linspace(0, 2 * np.pi, 100)
+        return self.x + np.cos(t) * self.radius, self.y + np.sin(t) * self.radius
+
