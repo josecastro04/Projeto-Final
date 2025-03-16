@@ -9,6 +9,7 @@ import circumference as c
 import rectangle as r
 import graphic as g
 import lines as l
+from matplotlib.collections import LineCollection
 
 
 class MainWindow(QMainWindow):
@@ -36,7 +37,7 @@ class MainWindow(QMainWindow):
         self.button.clicked.connect(self.check_options)
         menubar.setCornerWidget(self.button, corner=Qt.TopRightCorner)
 
-        opcoes_figura = ["Retas", "Quadrado", "Circunferência", "Desenhar"]
+        opcoes_figura = ["Retas", "Retângulo", "Circunferência", "Desenhar"]
         for opcao in opcoes_figura:
             action = QAction(opcao, self)
             action.triggered.connect(lambda checked, opcao=opcao: self.selecionar_figura(opcao))
@@ -88,18 +89,18 @@ class MainWindow(QMainWindow):
             raise ValueError(f"Erro ao processar a entrada: {e}")
 
     def update_window(self):
-        #fechar figuras antigas se existirem
+        
         if self.figure1 is not None and self.figure2 is not None:
             plt.close(self.figure1)
             plt.close(self.figure2)
         
-        #remover widgets anteriores, exceto o label principal
+        
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget is not None and widget != self.label:
                 widget.setParent(None)
 
-        #Remover o layout de inputs caso exista
+        
         if hasattr(self, 'input_layout') and self.input_layout is not None:
             while self.input_layout.count():
                 item = self.input_layout.takeAt(0)
@@ -111,18 +112,19 @@ class MainWindow(QMainWindow):
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
-
         if self.selected_figure_option == "Retas":
-            self.linesvert = l.Lines(self.ax1, -5,5, 0.5, 'red')
-            self.lineshor = l.Lines(self.ax1, -5,5, 0.5, 'blue')
+            self.linesvert = l.Lines(self.ax1, -1, 2, 0, 3, 0.25, 'red')
+            self.lineshor = l.Lines(self.ax1, -1, 2, 0, 3, 0.25, 'blue')
             self.linesvert.create_vertical_lines()
             self.lineshor.create_horizontal_lines()
-            
-            
-           
-        
 
-        elif self.selected_figure_option == "Quadrado":
+            self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
+            self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)
+            
+            
+
+
+        elif self.selected_figure_option == "Retângulo":
             self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
      
             canvas1.mpl_connect("button_press_event", self.rectangle.on_button_press)
@@ -161,40 +163,54 @@ class MainWindow(QMainWindow):
 
         if self.selected_fx_option == "sen(x)":
             if self.selected_figure_option == "Circunferência":
-                x,y = self.circumference.get_points()
-                xs,ys = self.graph.calcular_sen(x, y)
+                x, y = self.circumference.get_points()
+                xs, ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
-            elif self.selected_figure_option == "Quadrado":
-                x ,y = self.rectangle.get_points()
-                xs,ys = self.graph.calcular_sen(x, y)
+            elif self.selected_figure_option == "Retângulo":
+                x, y = self.rectangle.get_points()
+                xs, ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
-            elif self.selected_figure_option == "Retas":   
-                x,y = self.linesvert.get_pointsvert()
-                xs,ys = self.graph.calcular_sen(x,y)
-                self.ax2.plot(xs, ys, label="sen(z)", color='red')
-                z,m = self.lineshor.get_pointshor()
-                zs,ms = self.graph.calcular_sen(z,m)
-                self.ax2.plot(zs, ms, label="sen(z)", color='blue')
+            elif self.selected_figure_option == "Retas":
+                x, y = self.linesvert.get_pointsvert()
+                xs, ys = self.graph.calcular_sen(x, y)
+                z, m = self.lineshor.get_pointshor()
+                zs, ms = self.graph.calcular_sen(z, m)
+
+                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+
+                self.ax2.add_collection(lc_verticais)
+                self.ax2.add_collection(lc_horizontais)
+                self.ax2.plot([], [], ' ', label="sen(z)")  
+
+
+          
+
             else:
                 self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
-                
+           
 
         elif self.selected_fx_option == "cos(x)":
             if self.selected_figure_option == "Circunferência":
                 x,y = self.circumference.get_points()
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
-            elif self.selected_figure_option == "Quadrado":
+            elif self.selected_figure_option == "Retângulo":
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
             elif self.selected_figure_option == "Retas":
                 x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_cos(x,y)
-                self.ax2.plot(xs, ys, label="cos(z)", color='red')
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_cos(z,m)
-                self.ax2.plot(zs, ms, label="cos(z)", color='blue')
+                
+
+                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+
+                self.ax2.add_collection(lc_verticais)
+                self.ax2.add_collection(lc_horizontais)
+                self.ax2.plot([], [], ' ', label="cos(z)")
+
             else:
                 self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
 
@@ -204,18 +220,23 @@ class MainWindow(QMainWindow):
                 x,y = self.circumference.get_points()
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
-            elif self.selected_figure_option == "Quadrado":
+            elif self.selected_figure_option == "Retângulo":
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
             elif self.selected_figure_option == "Retas":
                 x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_exp(x,y)     
-                self.ax2.plot(xs, ys, label="exp(z)", color='red')
-                plt.gca().set_aspect('equal', adjustable='box')
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_exp(z,m)    
-                self.ax2.plot(zs, ms, label="exp(z)", color='blue')
+                
+
+                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+
+                self.ax2.add_collection(lc_verticais)
+                self.ax2.add_collection(lc_horizontais)
+                self.ax2.plot([], [], ' ', label="exp(z)")
+            
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
 
@@ -225,20 +246,28 @@ class MainWindow(QMainWindow):
                 x,y = self.circumference.get_points()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
-            elif self.selected_figure_option == "Quadrado":
+            elif self.selected_figure_option == "Retângulo":
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
             elif self.selected_figure_option == "Retas":
-                x,y = self.lines.get_pointsvert()
+                x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
-                self.ax2.plot(xs, ys, label="z + 1/z", color='red')
-                z,m = self.lines.get_pointshor()
+                
+                z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)
-                self.ax2.plot(zs, ms, label="z + 1/z", color='blue')
+                
+
+                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+
+                self.ax2.add_collection(lc_verticais)
+                self.ax2.add_collection(lc_horizontais)
+                self.ax2.plot([], [], ' ', label="z + 1/z")
+            
+            
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
-
+        self.ax2.autoscale()
         self.ax2.legend()
         canvas2.draw()
 
