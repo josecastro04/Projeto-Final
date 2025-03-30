@@ -1,10 +1,11 @@
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox, QLabel, QLineEdit, QHBoxLayout
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QApplication, QSlider,QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox, QLabel, QLineEdit, QHBoxLayout
+from matplotlib.widgets import RangeSlider
 import sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
 import math
-from PyQt5.QtCore import Qt
 import circumference as c
 import rectangle as r
 import graphic as g
@@ -87,7 +88,7 @@ class MainWindow(QMainWindow):
             return np.array([float(eval(val)) for val in input_str.split(',')])
         except Exception as e:
             raise ValueError(f"Erro ao processar a entrada: {e}")
-
+    
     def update_window(self):
         
         if self.figure1 is not None and self.figure2 is not None:
@@ -113,16 +114,36 @@ class MainWindow(QMainWindow):
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
         if self.selected_figure_option == "Retas":
-            self.linesvert = l.Lines(self.ax1, -1, 2, 0, 3, 0.25, 'red')
-            self.lineshor = l.Lines(self.ax1, -1, 2, 0, 3, 0.25, 'blue')
+            x_min, x_max, y_min, y_max, spacing = -1, 2, 0, 3, 0.25
+            self.slider_ax = self.figure1.add_axes([0.1, 0.001, 0.8, 0.03], xlim=(x_min, x_max))
+
+            self.linesvert = l.Lines(self.ax1, x_min, x_max, y_min, y_max, spacing, 'red')
+            self.lineshor = l.Lines(self.ax1, x_min, x_max, y_min, y_max, spacing, 'blue')
             self.linesvert.create_vertical_lines()
             self.lineshor.create_horizontal_lines()
 
-            self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
-            self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)
-            
-            
+            self.ax1.set_xlim(x_min, x_max)
+            self.ax1.set_ylim(y_min, y_max)
 
+            # Criar slider para espaçamento das linhas
+            self.slider_label = QLabel(f"Espaçamento das Linhas: {spacing}")
+            self.layout.addWidget(self.slider_label)
+
+            self.slider = QSlider(Qt.Horizontal)
+            self.slider.setMinimum(1)  
+            self.slider.setMaximum(50)  
+            self.slider.setValue(int(spacing * 10))  
+            self.slider.setTickInterval(1)
+            self.slider.setTickPosition(QSlider.TicksBelow)
+            self.slider.valueChanged.connect(self.update_lines)  # Conectar ao método correto
+            self.layout.addWidget(self.slider)
+
+            # Criar QLabel para tamanho das linhas fora do gráfico
+            self.line_length_label = QLabel("Tamanho das Linhas: 1.0")
+            self.layout.addWidget(self.line_length_label)
+
+            self.range_slider = RangeSlider(self.slider_ax, "Tamanho", -2, 2, valinit=(-1, 1))
+            self.range_slider.on_changed(self.update_line_length)
 
         elif self.selected_figure_option == "Retângulo":
             self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
@@ -151,7 +172,7 @@ class MainWindow(QMainWindow):
             self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
 
         canvas1.draw()
-        
+        self.ax1.set_aspect('equal')
         
         self.figure2, self.ax2 = plt.subplots()
         canvas2 = FigureCanvas(self.figure2)
@@ -203,6 +224,7 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_cos(x,y)
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_cos(z,m)
+                print(np.log(-2 + 1j))
                 
 
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
@@ -267,9 +289,25 @@ class MainWindow(QMainWindow):
             
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
-        self.ax2.autoscale()
+
+        self.ax2.set_aspect('equal')
         self.ax2.legend()
         canvas2.draw()
+        
+            
+    def update_lines(self, value):
+        spacing = value / 10  # Converte o valor do slider para um espaçamento adequado
+        self.slider_label.setText(f"Espaçamento das Linhas: {spacing:.1f}")
+        self.linesvert.update_lines(spacing)
+        self.lineshor.update_lines(spacing)
+        self.figure1.canvas.draw()
+    
+    def update_line_length(self, val):
+            min_val, max_val = val
+            self.line_length_label.setText(f"Tamanho das Linhas: ({min_val:.1f}, {max_val:.1f})")
+            self.lineshor.update_line_length((min_val, max_val))
+            self.figure1.canvas.draw()
+
 
 def main():
     app = QApplication(sys.argv)
