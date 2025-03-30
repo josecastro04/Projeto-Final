@@ -9,8 +9,8 @@ import circumference as c
 import rectangle as r
 import graphic as g
 import lines as l
+import draw as d
 from matplotlib.collections import LineCollection
-
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -79,28 +79,22 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "Erro", "Selecione uma opção de cada menu.")
 
     def parse_input(self, input_str):
-       
         try:
-    
             input_str = input_str.replace("pi", str(math.pi))
-        
             return np.array([float(eval(val)) for val in input_str.split(',')])
         except Exception as e:
             raise ValueError(f"Erro ao processar a entrada: {e}")
 
     def update_window(self):
-        
         if self.figure1 is not None and self.figure2 is not None:
             plt.close(self.figure1)
             plt.close(self.figure2)
-        
         
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget is not None and widget != self.label:
                 widget.setParent(None)
 
-        
         if hasattr(self, 'input_layout') and self.input_layout is not None:
             while self.input_layout.count():
                 item = self.input_layout.takeAt(0)
@@ -117,49 +111,36 @@ class MainWindow(QMainWindow):
             self.lineshor = l.Lines(self.ax1, -1, 2, 0, 3, 0.25, 'blue')
             self.linesvert.create_vertical_lines()
             self.lineshor.create_horizontal_lines()
-
             self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
             self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)
-            
-            
-
-
         elif self.selected_figure_option == "Retângulo":
             self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
-     
             canvas1.mpl_connect("button_press_event", self.rectangle.on_button_press)
             canvas1.mpl_connect("button_release_event", self.rectangle.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.rectangle.on_mouse_move)
-
         elif self.selected_figure_option == "Circunferência":
             self.circumference = c.Circumference(self.ax1, -0.1, 0.5, 1, 'red')
             self.input_layout = QHBoxLayout()
             self.input_layout.addWidget(QLabel("Centro:"))
             center_input, radius_input = self.circumference.get_input()
             self.input_layout.addWidget(center_input)
-
             self.input_layout.addWidget(QLabel("Raio:"))
             self.input_layout.addWidget(radius_input)
-
             self.layout.addLayout(self.input_layout)
             self.show()
             canvas1.mpl_connect("button_press_event", self.circumference.on_button_press)
             canvas1.mpl_connect("button_release_event", self.circumference.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.circumference.on_mouse_move)
-
         elif self.selected_figure_option == "Desenhar":
-            self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
-
+            self.draw_mode = d.Draw(self.ax1, canvas1)
+            plt.subplots_adjust(bottom=0.2)
         canvas1.draw()
-        
         
         self.figure2, self.ax2 = plt.subplots()
         canvas2 = FigureCanvas(self.figure2)
         self.layout.addWidget(canvas2)
         
-
         x = np.linspace(-5, 5, 100)
-        
 
         if self.selected_fx_option == "sen(x)":
             if self.selected_figure_option == "Circunferência":
@@ -175,19 +156,18 @@ class MainWindow(QMainWindow):
                 xs, ys = self.graph.calcular_sen(x, y)
                 z, m = self.lineshor.get_pointshor()
                 zs, ms = self.graph.calcular_sen(z, m)
-
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
-
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
-                self.ax2.plot([], [], ' ', label="sen(z)")  
-
-
-          
-
+                self.ax2.plot([], [], ' ', label="sen(z)")
+            elif self.selected_figure_option == "Desenhar":
+                points = self.draw_mode.get_points()
+                if len(points) > 0:
+                    x_pts, y_pts = zip(*points)
+                    xs, ys = self.graph.calcular_sen(np.array(x_pts), np.array(y_pts))
+                    self.ax2.plot(xs, ys, label="sen(z)", color='purple')
             else:
                 self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
-           
 
         elif self.selected_fx_option == "cos(x)":
             if self.selected_figure_option == "Circunferência":
@@ -203,17 +183,18 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_cos(x,y)
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_cos(z,m)
-                
-
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
-
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="cos(z)")
-
+            elif self.selected_figure_option == "Desenhar":
+                points = self.draw_mode.get_points()
+                if len(points) > 0:
+                    x_pts, y_pts = zip(*points)
+                    xs, ys = self.graph.calcular_cos(np.array(x_pts), np.array(y_pts))
+                    self.ax2.plot(xs, ys, label="cos(z)", color='green')
             else:
                 self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
-
         
         elif self.selected_fx_option == "exp(x)":
             if self.selected_figure_option == "Circunferência":
@@ -229,17 +210,18 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_exp(x,y)     
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_exp(z,m)    
-                
-
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
-
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="exp(z)")
-            
+            elif self.selected_figure_option == "Desenhar":
+                points = self.draw_mode.get_points()
+                if len(points) > 0:
+                    x_pts, y_pts = zip(*points)
+                    xs, ys = self.graph.calcular_exp(np.array(x_pts), np.array(y_pts))
+                    self.ax2.plot(xs, ys, label="exp(z)", color='red')
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
-
 
         elif self.selected_fx_option == "z + 1/z":
             if self.selected_figure_option == "Circunferência":
@@ -253,18 +235,18 @@ class MainWindow(QMainWindow):
             elif self.selected_figure_option == "Retas":
                 x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
-                
                 z,m = self.lineshor.get_pointshor()
                 zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)
-                
-
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
-
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="z + 1/z")
-            
-            
+            elif self.selected_figure_option == "Desenhar":
+                points = self.draw_mode.get_points()
+                if len(points) > 0:
+                    x_pts, y_pts = zip(*points)
+                    xs, ys = self.graph.calcular_z_mais_1_por_z(np.array(x_pts), np.array(y_pts))
+                    self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
         self.ax2.autoscale()
