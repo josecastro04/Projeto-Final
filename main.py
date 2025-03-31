@@ -1,6 +1,7 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QApplication, QSlider,QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox, QLabel, QLineEdit, QHBoxLayout
-from matplotlib.widgets import RangeSlider
+from matplotlib.widgets import RangeSlider, Slider
+from matplotlib.figure import Figure
 import sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
@@ -56,6 +57,7 @@ class MainWindow(QMainWindow):
         
         self.figure1 = None
         self.figure2 = None
+        self.figure3 = None
 
     def selecionar_figura(self, opcao):
         self.selected_figure_option = opcao
@@ -96,6 +98,7 @@ class MainWindow(QMainWindow):
             plt.close(self.figure2)
         
         
+        
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
             if widget is not None and widget != self.label:
@@ -113,6 +116,12 @@ class MainWindow(QMainWindow):
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
+
+        self.figure3 = Figure()  
+        self.canvas3 = FigureCanvas(self.figure3)
+        self.layout.addWidget(self.canvas3)
+
+        
         if self.selected_figure_option == "Retas":
             x_min, x_max, y_min, y_max, spacing = -1, 2, 0, 3, 0.25
             self.slider_ax = self.figure1.add_axes([0.1, 0.001, 0.8, 0.03], xlim=(x_min, x_max))
@@ -124,27 +133,10 @@ class MainWindow(QMainWindow):
 
             self.ax1.set_xlim(x_min, x_max)
             self.ax1.set_ylim(y_min, y_max)
-
-            # Criar slider para espaçamento das linhas
-            self.slider_label = QLabel(f"Espaçamento das Linhas: {spacing}")
-            self.layout.addWidget(self.slider_label)
-
-            self.slider = QSlider(Qt.Horizontal)
-            self.slider.setMinimum(1)  
-            self.slider.setMaximum(50)  
-            self.slider.setValue(int(spacing * 10))  
-            self.slider.setTickInterval(1)
-            self.slider.setTickPosition(QSlider.TicksBelow)
-            self.slider.valueChanged.connect(self.update_lines)  # Conectar ao método correto
-            self.layout.addWidget(self.slider)
-
-            # Criar QLabel para tamanho das linhas fora do gráfico
-            self.line_length_label = QLabel("Tamanho das Linhas: 1.0")
-            self.layout.addWidget(self.line_length_label)
-
-            self.range_slider = RangeSlider(self.slider_ax, "Tamanho", -2, 2, valinit=(-1, 1))
-            self.range_slider.on_changed(self.update_line_length)
-
+            
+            
+            self.add_sliders()
+            self.show()
         elif self.selected_figure_option == "Retângulo":
             self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
      
@@ -294,19 +286,55 @@ class MainWindow(QMainWindow):
         self.ax2.legend()
         canvas2.draw()
         
+    def add_sliders(self):
+        self.figure3.clear()  
+
+        self.slider_ax1 = self.figure3.add_axes([0.1, 0.6, 0.8, 0.3])
+        self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.3])
+
+        self.slider_spacing = Slider(self.slider_ax1, "Espaçamento", 0.05, 1, valinit=0.25)
+        self.slider_length = RangeSlider(self.slider_ax2, "Tamanho das Linhas", 0, 1, valinit=(0.1, 0.9))
+
+     
+        self.slider_spacing.on_changed(self.update_grid)
+
+        self.canvas3.draw() 
+
+
+    def update_grid(self, val):
+        """Atualiza o espaçamento das linhas e atualiza os gráficos"""
+        if self.selected_figure_option == "Retas":
+            new_spacing = self.slider_spacing.val  
+
             
-    def update_lines(self, value):
-        spacing = value / 10  # Converte o valor do slider para um espaçamento adequado
-        self.slider_label.setText(f"Espaçamento das Linhas: {spacing:.1f}")
-        self.linesvert.update_lines(spacing)
-        self.lineshor.update_lines(spacing)
-        self.figure1.canvas.draw()
-    
-    def update_line_length(self, val):
-            min_val, max_val = val
-            self.line_length_label.setText(f"Tamanho das Linhas: ({min_val:.1f}, {max_val:.1f})")
-            self.lineshor.update_line_length((min_val, max_val))
-            self.figure1.canvas.draw()
+            self.linesvert.update_lines(new_spacing)
+            self.lineshor.update_lines(new_spacing)
+
+           
+            self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
+            self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)
+            self.figure1.canvas.draw()  
+
+           
+            self.ax2.clear()  
+            self.ax2.grid(True)  
+
+           
+            
+            x, y = self.linesvert.get_pointsvert()
+            xs, ys = self.graph.calcular_sen(x, y) 
+
+            z, m = self.lineshor.get_pointshor()
+            zs, ms = self.graph.calcular_sen(z, m)  
+
+            
+            lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+            self.ax2.add_collection(lc_verticais)
+            self.ax2.add_collection(lc_horizontais)
+            self.ax2.plot([], [], ' ', label="Transformação f(z)")  
+
+            
+            self.figure2.canvas.draw()
 
 
 def main():

@@ -13,20 +13,18 @@ class Lines(QWidget):
         self.spacing = spacing
         self.color = color
         self.lines = []
-        
         self.update_lines(spacing)  
-       
 
     def create_horizontal_lines(self):
         """Cria linhas horizontais no gráfico."""
         for y in self.lines_hor:
-            line, = self.ax.plot([self.x_min, self.x_max], [y, y], color=self.color, linestyle='-')
+            line, = self.ax.plot([self.x_min, self.x_max], [y, y], color='blue', linestyle='-')
             self.lines.append(line)
 
     def create_vertical_lines(self):
         """Cria linhas verticais no gráfico."""
         for x in self.lines_vert:
-            line, = self.ax.plot([x, x], [self.y_min, self.y_max], color=self.color, linestyle='-')
+            line, = self.ax.plot([x, x], [self.y_min, self.y_max], color='red', linestyle='-')
             self.lines.append(line)
 
     def update_lines(self, new_spacing):
@@ -35,15 +33,17 @@ class Lines(QWidget):
         self.lines_vert = np.arange(self.x_min, self.x_max + self.spacing, self.spacing)
         self.lines_hor = np.arange(self.y_min, self.y_max + self.spacing, self.spacing)
         self.num_pontos = self.calcula_num_pontos()
-        
+
         
         for line in self.lines:
             line.remove()
-        self.lines = []
+        self.lines.clear()  
+
         
         self.create_horizontal_lines()
         self.create_vertical_lines()
-    
+
+        self.ax.figure.canvas.draw()
 
     def calcula_num_pontos(self):
         """Calcula um número adequado de pontos para suavizar a curva."""
