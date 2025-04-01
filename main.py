@@ -123,16 +123,17 @@ class MainWindow(QMainWindow):
 
         
         if self.selected_figure_option == "Retas":
-            x_min, x_max, y_min, y_max, spacing = -1, 2, 0, 3, 0.25
-            self.slider_ax = self.figure1.add_axes([0.1, 0.001, 0.8, 0.03], xlim=(x_min, x_max))
+            self.x_min, self.x_max, self.y_min, self.y_max, spacing = -1, 2, 0, 3, 0.25
+            self.numero_linhas = (self.x_max - self.x_min) / spacing
+            self.slider_ax = self.figure1.add_axes([0.1, 0.001, 0.8, 0.03], xlim=(self.x_min, self.x_max))
 
-            self.linesvert = l.Lines(self.ax1, x_min, x_max, y_min, y_max, spacing, 'red')
-            self.lineshor = l.Lines(self.ax1, x_min, x_max, y_min, y_max, spacing, 'blue')
+            self.linesvert = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, spacing, 'red')
+            self.lineshor = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, spacing, 'blue')
             self.linesvert.create_vertical_lines()
             self.lineshor.create_horizontal_lines()
 
-            self.ax1.set_xlim(x_min, x_max)
-            self.ax1.set_ylim(y_min, y_max)
+            self.ax1.set_xlim(self.x_min, self.x_max)
+            self.ax1.set_ylim(self.y_min, self.y_max)
             
             
             self.add_sliders()
@@ -288,11 +289,10 @@ class MainWindow(QMainWindow):
         
     def add_sliders(self):
         self.figure3.clear()  
-
-        self.slider_ax1 = self.figure3.add_axes([0.1, 0.6, 0.8, 0.3])
+        self.slider_ax1 = self.figure3.add_axes([0.1, 0.6, 0.8, 0.1])  # Reduced height for easier interaction
         self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.3])
 
-        self.slider_spacing = Slider(self.slider_ax1, "Espaçamento", 0.05, 1, valinit=0.25)
+        self.slider_spacing = Slider(self.slider_ax1, "Numero de Linhas", 1, 20, valinit= self.numero_linhas, valstep=1)
         self.slider_length = RangeSlider(self.slider_ax2, "Tamanho das Linhas", 0, 1, valinit=(0.1, 0.9))
 
      
@@ -304,11 +304,13 @@ class MainWindow(QMainWindow):
     def update_grid(self, val):
         """Atualiza o espaçamento das linhas e atualiza os gráficos"""
         if self.selected_figure_option == "Retas":
-            new_spacing = self.slider_spacing.val  
+            
+            new_spacingvert =( self.x_max - self.x_min)/self.slider_spacing.val 
+            new_spacinghor = (self.y_max - self.y_min) / self.slider_spacing.val 
 
             
-            self.linesvert.update_lines(new_spacing)
-            self.lineshor.update_lines(new_spacing)
+            self.linesvert.update_lines(new_spacingvert)
+            self.lineshor.update_lines(new_spacinghor)
 
            
             self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
