@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.button.clicked.connect(self.check_options)
         menubar.setCornerWidget(self.button, corner=Qt.TopRightCorner)
 
-        opcoes_figura = ["Retas", "Retângulo", "Circunferência", "Desenhar"]
+        opcoes_figura = ["Grelhas", "Retângulo", "Circunferência", "Desenhar"]
         for opcao in opcoes_figura:
             action = QAction(opcao, self)
             action.triggered.connect(lambda checked, opcao=opcao: self.selecionar_figura(opcao))
@@ -80,24 +80,12 @@ class MainWindow(QMainWindow):
                 QMessageBox.critical(self, "Erro", f"Erro ao atualizar a janela: {str(e)}")
         else:
             QMessageBox.critical(self, "Erro", "Selecione uma opção de cada menu.")
-
-    def parse_input(self, input_str):
-       
-        try:
-    
-            input_str = input_str.replace("pi", str(math.pi))
-        
-            return np.array([float(eval(val)) for val in input_str.split(',')])
-        except Exception as e:
-            raise ValueError(f"Erro ao processar a entrada: {e}")
     
     def update_window(self):
         
         if self.figure1 is not None and self.figure2 is not None:
             plt.close(self.figure1)
             plt.close(self.figure2)
-        
-        
         
         for i in reversed(range(self.layout.count())):
             widget = self.layout.itemAt(i).widget()
@@ -122,10 +110,9 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.canvas3)
 
         
-        if self.selected_figure_option == "Retas":
+        if self.selected_figure_option == "Grelhas":
             self.x_min, self.x_max, self.y_min, self.y_max, spacing = -1, 2, 0, 3, 0.25
             self.numero_linhas = (self.x_max - self.x_min) / spacing
-            self.slider_ax = self.figure1.add_axes([0.1, 0.001, 0.8, 0.03], xlim=(self.x_min, self.x_max))
 
             self.linesvert = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, spacing, 'red')
             self.lineshor = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, spacing, 'blue')
@@ -184,7 +171,7 @@ class MainWindow(QMainWindow):
                 x, y = self.rectangle.get_points()
                 xs, ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
-            elif self.selected_figure_option == "Retas":
+            elif self.selected_figure_option == "Grelhas":
                 x, y = self.linesvert.get_pointsvert()
                 xs, ys = self.graph.calcular_sen(x, y)
                 z, m = self.lineshor.get_pointshor()
@@ -212,19 +199,17 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
-            elif self.selected_figure_option == "Retas":
-                x,y = self.linesvert.get_pointsvert()
-                xs,ys = self.graph.calcular_cos(x,y)
-                z,m = self.lineshor.get_pointshor()
-                zs,ms = self.graph.calcular_cos(z,m)
-                print(np.log(-2 + 1j))
-                
+            elif self.selected_figure_option == "Grelhas":
+                x, y = self.linesvert.get_pointsvert()
+                xs, ys = self.graph.calcular_cos(x, y)
+                z, m = self.lineshor.get_pointshor()
+                zs, ms = self.graph.calcular_cos(z, m)
 
                 lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
-                self.ax2.plot([], [], ' ', label="cos(z)")
+                self.ax2.plot([], [], ' ', label="cos(z)")  
 
             else:
                 self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
@@ -239,7 +224,7 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
-            elif self.selected_figure_option == "Retas":
+            elif self.selected_figure_option == "Grelhas":
                 x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_exp(x,y)     
                 z,m = self.lineshor.get_pointshor()
@@ -265,7 +250,7 @@ class MainWindow(QMainWindow):
                 x ,y = self.rectangle.get_points()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
-            elif self.selected_figure_option == "Retas":
+            elif self.selected_figure_option == "Grelhas":
                 x,y = self.linesvert.get_pointsvert()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 
@@ -303,7 +288,7 @@ class MainWindow(QMainWindow):
 
     def update_grid(self, val):
         """Atualiza o espaçamento das linhas e atualiza os gráficos"""
-        if self.selected_figure_option == "Retas":
+        if self.selected_figure_option == "Grelhas":
             
             new_spacingvert =( self.x_max - self.x_min)/self.slider_spacing.val 
             new_spacinghor = (self.y_max - self.y_min) / self.slider_spacing.val 
@@ -321,13 +306,20 @@ class MainWindow(QMainWindow):
             self.ax2.clear()  
             self.ax2.grid(True)  
 
-           
-            
+            if self.selected_fx_option == "sen(x)":
+               function = self.graph.calcular_sen
+            elif self.selected_fx_option == "cos(x)":
+                function = self.graph.calcular_cos
+            elif self.selected_fx_option == "exp(x)":
+                function = self.graph.calcular_exp
+            else:
+                function = self.graph.calcular_z_mais_1_por_z
+                
             x, y = self.linesvert.get_pointsvert()
-            xs, ys = self.graph.calcular_sen(x, y) 
+            xs, ys = function(x, y) 
 
             z, m = self.lineshor.get_pointshor()
-            zs, ms = self.graph.calcular_sen(z, m)  
+            zs, ms = function(z, m)  
 
             
             lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)

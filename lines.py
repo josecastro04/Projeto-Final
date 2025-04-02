@@ -30,8 +30,10 @@ class Lines(QWidget):
     def update_lines(self, new_spacing):
         """Atualiza as linhas quando o espaçamento é alterado."""
         self.spacing = new_spacing
-        self.lines_vert = np.arange(self.x_min, self.x_max + self.spacing, self.spacing)
-        self.lines_hor = np.arange(self.y_min, self.y_max + self.spacing, self.spacing)
+        num_vert = int((self.x_max - self.x_min) / self.spacing) + 1
+        num_hor = int((self.y_max - self.y_min) / self.spacing) + 1
+        self.lines_vert = np.linspace(self.x_min, self.x_max , num_vert)
+        self.lines_hor = np.linspace(self.y_min, self.y_max , num_hor)
         self.num_pontos = self.calcula_num_pontos()
 
         
