@@ -13,48 +13,63 @@ class Lines(QWidget):
         self.spacing = spacing
         self.color = color
         self.lines = []
-        self.update_lines(spacing)  
+        self.lines_hor = []
+        self.lines_vert = []
+        self.update_lineshori(spacing)
+        self.update_linesvert(spacing)  
+        
 
     def create_horizontal_lines(self):
-        """Cria linhas horizontais no gráfico."""
+        
         for y in self.lines_hor:
             line, = self.ax.plot([self.x_min, self.x_max], [y, y], color='blue', linestyle='-')
             self.lines.append(line)
 
     def create_vertical_lines(self):
-        """Cria linhas verticais no gráfico."""
         for x in self.lines_vert:
             line, = self.ax.plot([x, x], [self.y_min, self.y_max], color='red', linestyle='-')
             self.lines.append(line)
+            
+    def clear_lines(self):
+    
+        for line in self.lines:
+            if line in self.ax.lines:
+                line.remove()
+        self.lines.clear()
+        self.lines_hor = np.array([])
+        self.lines_vert = np.array([])
 
-    def update_lines(self, new_spacing):
-        """Atualiza as linhas quando o espaçamento é alterado."""
+    def update_lineshori(self,new_spacing):
         self.spacing = new_spacing
-        num_vert = int((self.x_max - self.x_min) / self.spacing) + 1
         num_hor = int((self.y_max - self.y_min) / self.spacing) + 1
-        self.lines_vert = np.linspace(self.x_min, self.x_max , num_vert)
         self.lines_hor = np.linspace(self.y_min, self.y_max , num_hor)
         self.num_pontos = self.calcula_num_pontos()
-
-        
-        for line in self.lines:
-            line.remove()
-        self.lines.clear()  
-
+        self.ax.lines.clear()
         
         self.create_horizontal_lines()
-        self.create_vertical_lines()
-
+        
         self.ax.figure.canvas.draw()
+        
+    def update_linesvert(self,new_spacing):
+        self.spacing = new_spacing
+        num_vert = int((self.x_max - self.x_min) / self.spacing) + 1
+        self.lines_vert = np.linspace(self.x_min, self.x_max , num_vert)
+        self.num_pontos = self.calcula_num_pontos()
+        self.ax.lines.clear()
+     
+        
+        self.create_vertical_lines()
+        self.ax.figure.canvas.draw()
+   
 
     def calcula_num_pontos(self):
-        """Calcula um número adequado de pontos para suavizar a curva."""
+       
         x = self.x_max - self.x_min
         y = self.y_max - self.y_min
         return int(max(x, y) * 50)
 
     def get_pointshor(self):
-        """Retorna os pontos das linhas horizontais."""
+        
         x = []
         y = []
         t = np.linspace(self.x_min, self.x_max, self.num_pontos)  
@@ -65,7 +80,7 @@ class Lines(QWidget):
         return np.array(x), np.array(y)
 
     def get_pointsvert(self):
-        """Retorna os pontos das linhas verticais."""
+       
         x = []
         y = []  
         t = np.linspace(self.y_min, self.y_max, self.num_pontos)  
@@ -76,7 +91,7 @@ class Lines(QWidget):
         return np.array(x), np.array(y)
 
     def plot_on_ax2(self, ax2, xs, ys, zs, ms):
-        """Plota as transformações das linhas no segundo gráfico."""
+        
         segmentos_verticais = [
             np.column_stack([xs[i:i+self.num_pontos], ys[i:i+self.num_pontos]]) 
             for i in range(0, len(xs), self.num_pontos)
