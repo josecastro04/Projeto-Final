@@ -109,12 +109,13 @@ class MainWindow(QMainWindow):
         self.figure1, self.ax1 = plt.subplots()
         canvas1 = FigureCanvas(self.figure1)
         self.layout.addWidget(canvas1)
-
-        self.figure3 = Figure()  
-        self.canvas3 = FigureCanvas(self.figure3)
-        self.layout.addWidget(self.canvas3)
         
         if self.selected_figure_option == "Grelhas":
+            self.figure3 = Figure()  
+            self.canvas3 = FigureCanvas(self.figure3)
+            self.canvas3.setVisible(False)
+            self.layout.addWidget(self.canvas3)
+            
             self.x_min, self.x_max, self.y_min, self.y_max, self.spacing = -1, 2, 0, 3, 0.25
             
 
@@ -262,7 +263,7 @@ class MainWindow(QMainWindow):
     
     def add_sliders(self):
         self.figure3.clear()
-
+        
         combo_espacamento = QComboBox()
         combo_espacamento.addItems(["Selecione...", "Espaçamento Horizontal", "Espaçamento Vertical"])
         combo_espacamento.currentTextChanged.connect(self.selecionar_espacamento)
@@ -289,6 +290,9 @@ class MainWindow(QMainWindow):
 
         hbox = QHBoxLayout()
         hbox.addWidget(menu_widget)
+        
+        hbox.setContentsMargins(30, 5, 30, 5)
+        hbox.setSpacing(15)
 
         slider_widget = QWidget()
         slider_widget.setLayout(hbox)
@@ -301,13 +305,14 @@ class MainWindow(QMainWindow):
         self.update_label()
 
         if opcao == "Selecione...":
-            self.canvas3.draw()
-            return
+           return
+       
+        self.canvas3.setVisible(True)
 
         if hasattr(self, 'slider_ax2') and self.slider_ax2 in self.figure3.axes:
             self.figure3.delaxes(self.slider_ax2)
        
-        self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.3]) 
+        self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.15]) 
         
         if opcao == "Alterar tamanho Reta Horizontal":
             valinit = (self.lineshor.x_min, self.lineshor.x_max)
@@ -325,13 +330,14 @@ class MainWindow(QMainWindow):
 
     def selecionar_espacamento(self, opcao):
         if opcao == "Selecione...":
-           self.canvas3.draw()
            return
+       
+        self.canvas3.setVisible(True)
     
         if hasattr(self, 'slider_ax3') and self.slider_ax3 in self.figure3.axes:
            self.figure3.delaxes(self.slider_ax3)
     
-        self.slider_ax3 = self.figure3.add_axes([0.1, 0.05, 0.8, 0.1])  
+        self.slider_ax3 = self.figure3.add_axes([0.1, 0.05, 0.8, 0.15])  
     
         if opcao == "Espaçamento Horizontal":
            valinit_aux = self.lineshor.spacing
