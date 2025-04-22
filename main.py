@@ -8,6 +8,7 @@ import sys
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import numpy as np
+import math
 import circumference as c
 import rectangle as r
 import graphic as g
