@@ -58,7 +58,6 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.label, alignment=Qt.AlignTop | Qt.AlignLeft)
         self.label.setStyleSheet("font-size: 16px; padding: 4px;")
 
-
         self.show()
         
         self.figure1 = None
@@ -77,7 +76,6 @@ class MainWindow(QMainWindow):
         figura_text = f"<b>Figura:</b> {self.selected_figure_option}" if self.selected_figure_option else "<b>Figura:</b>"
         fx_text = f"<b>F(x):</b> {self.selected_fx_option}" if self.selected_fx_option else "<b>F(x):</b>"
         self.label.setText(f"{figura_text}  {fx_text}")
-
 
     def check_options(self):
         if self.selected_figure_option and self.selected_fx_option:
@@ -115,7 +113,6 @@ class MainWindow(QMainWindow):
         self.figure3 = Figure()  
         self.canvas3 = FigureCanvas(self.figure3)
         self.layout.addWidget(self.canvas3)
-
         
         if self.selected_figure_option == "Grelhas":
             self.x_min, self.x_max, self.y_min, self.y_max, self.spacing = -1, 2, 0, 3, 0.25
@@ -163,11 +160,9 @@ class MainWindow(QMainWindow):
         
         self.figure2, self.ax2 = plt.subplots()
         canvas2 = FigureCanvas(self.figure2)
-        self.layout.addWidget(canvas2)
-        
+        self.layout.addWidget(canvas2)  
 
         x = np.linspace(-5, 5, 100)
-        
 
         if self.selected_fx_option == "sen(x)":
             if self.selected_figure_option == "Circunferência":
@@ -189,14 +184,8 @@ class MainWindow(QMainWindow):
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="sen(z)")  
-
-
-          
-
             else:
                 self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
-           
-
         elif self.selected_fx_option == "cos(x)":
             if self.selected_figure_option == "Circunferência":
                 x,y = self.circumference.get_points()
@@ -216,12 +205,9 @@ class MainWindow(QMainWindow):
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
-                self.ax2.plot([], [], ' ', label="cos(z)")  
-
+                self.ax2.plot([], [], ' ', label="cos(z)")
             else:
-                self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')
-
-        
+                self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')   
         elif self.selected_fx_option == "exp(x)":
             if self.selected_figure_option == "Circunferência":
                 x,y = self.circumference.get_points()
@@ -242,12 +228,9 @@ class MainWindow(QMainWindow):
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
-                self.ax2.plot([], [], ' ', label="exp(z)")
-            
+                self.ax2.plot([], [], ' ', label="exp(z)")     
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
-
-
         elif self.selected_fx_option == "z + 1/z":
             if self.selected_figure_option == "Circunferência":
                 x,y = self.circumference.get_points()
@@ -270,15 +253,12 @@ class MainWindow(QMainWindow):
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="z + 1/z")
-            
-            
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
 
         self.ax2.set_aspect('equal')
         self.ax2.legend()
         canvas2.draw()
-        
     
     def add_sliders(self):
         self.figure3.clear()
@@ -314,12 +294,6 @@ class MainWindow(QMainWindow):
         slider_widget.setLayout(hbox)
         self.layout.addWidget(slider_widget)
 
-       
-       
-
-
-
-
     def show_error_message(self):
         QMessageBox.warning(self, "Erro", "Selecione uma reta para alterar antes de usar o slider.")
 
@@ -332,12 +306,8 @@ class MainWindow(QMainWindow):
 
         if hasattr(self, 'slider_ax2') and self.slider_ax2 in self.figure3.axes:
             self.figure3.delaxes(self.slider_ax2)
-
-
-
        
         self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.3]) 
-
         
         if opcao == "Alterar tamanho Reta Horizontal":
             valinit = (self.lineshor.x_min, self.lineshor.x_max)
@@ -348,44 +318,37 @@ class MainWindow(QMainWindow):
         else:
             return
 
-        
         self.slider_length = RangeSlider(self.slider_ax2, "Tamanho das Linhas", -10, 10, valinit=(range_min,range_max), valstep=1)
         self.slider_length.on_changed(lambda val: self.update_lines(val, opcao))
 
         self.canvas3.draw()
 
     def selecionar_espacamento(self, opcao):
-         if opcao == "Selecione...":
-             self.canvas3.draw()
-             return
+        if opcao == "Selecione...":
+           self.canvas3.draw()
+           return
+    
+        if hasattr(self, 'slider_ax3') and self.slider_ax3 in self.figure3.axes:
+           self.figure3.delaxes(self.slider_ax3)
+    
+        self.slider_ax3 = self.figure3.add_axes([0.1, 0.05, 0.8, 0.1])  
+    
+        if opcao == "Espaçamento Horizontal":
+           valinit_aux = self.lineshor.spacing
+           self.numero_linhas = (self.lineshor.x_max - self.lineshor.x_min) / self.spacing
+           
+           label = "Espaçamento Horizontal"
+        elif opcao == "Espaçamento Vertical":
+           valinit_aux = self.linesvert.spacing
+           self.numero_linhas = (self.linesvert.y_max - self.linesvert.y_min) / self.spacing
+           label = "Espaçamento Vertical"
+        else:
+            return
         
-        
-         if hasattr(self, 'slider_ax3') and self.slider_ax3 in self.figure3.axes:
-             self.figure3.delaxes(self.slider_ax3)
-
-        
-         self.slider_ax3 = self.figure3.add_axes([0.1, 0.05, 0.8, 0.1])  
-
-        
-         if opcao == "Espaçamento Horizontal":
-             valinit_aux = self.lineshor.spacing
-             self.numero_linhas = (self.lineshor.x_max - self.lineshor.x_min) / self.spacing
-             
-             label = "Espaçamento Horizontal"
-         elif opcao == "Espaçamento Vertical":
-            valinit_aux = self.linesvert.spacing
-            self.numero_linhas = (self.linesvert.y_max - self.linesvert.y_min) / self.spacing
-            label = "Espaçamento Vertical"
-         else:
-             return
-         
-         self.slider_spacing = Slider(self.slider_ax3, label, 1, 20, valinit=self.numero_linhas, valstep=1)
-
-         self.slider_spacing.on_changed(lambda val: self.update_spacing(val, opcao))
-
-
-        
-         self.canvas3.draw()
+        self.slider_spacing = Slider(self.slider_ax3, label, 1, 20, valinit=self.numero_linhas, valstep=1)
+        self.slider_spacing.on_changed(lambda val: self.update_spacing(val, opcao))
+    
+        self.canvas3.draw()
 
 
        
@@ -435,66 +398,54 @@ class MainWindow(QMainWindow):
     def update_lines(self, val,opcao):
         """Atualiza o tamanho das linhas e atualiza os gráficos"""
         if self.selected_figure_option == "Grelhas":
-          if opcao == "Alterar tamanho Reta Horizontal":
-    
+            if opcao == "Alterar tamanho Reta Horizontal":
+                self.lineshor.x_min, self.lineshor.x_max = self.slider_length.val
+                self.linesvert.x_min, self.linesvert.x_max = self.slider_length.val
+                for line in self.ax1.lines[:]:
+                    line.remove()
 
-            self.lineshor.x_min, self.lineshor.x_max = self.slider_length.val
-            self.linesvert.x_min, self.linesvert.x_max = self.slider_length.val
-            self.ax1.lines.clear()
-            
+                self.lineshor.create_horizontal_lines()
+                self.linesvert.create_vertical_lines()
 
-            self.lineshor.create_horizontal_lines()
-            self.linesvert.create_vertical_lines()
+                self.ax1.set_xlim(self.lineshor.x_min, self.lineshor.x_max)
+                self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)  
+            elif opcao == "Alterar tamanho Reta Vertical":
+                self.linesvert.y_min, self.linesvert.y_max = self.slider_length.val
+                self.lineshor.y_min, self.lineshor.y_max = self.slider_length.val 
+                for line in self.ax1.lines[:]:
+                    line.remove()
+                    
+                self.linesvert.create_vertical_lines()
+                self.lineshor.create_horizontal_lines()
+                self.ax1.set_ylim(self.linesvert.y_min, self.linesvert.y_max)
 
-    
-            self.ax1.set_xlim(self.lineshor.x_min, self.lineshor.x_max)
-            self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)  
-
+                self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
               
+            self.figure1.canvas.draw()
+              
+            self.ax2.clear()
+            self.ax2.grid(True)
 
-              
-    
-              
-          elif opcao == "Alterar tamanho Reta Vertical":
-              self.linesvert.y_min, self.linesvert.y_max = self.slider_length.val
-              self.lineshor.y_min, self.lineshor.y_max = self.slider_length.val 
-              self.ax1.lines.clear()          
-              self.linesvert.create_vertical_lines()
-              self.lineshor.create_horizontal_lines()
-              self.ax1.set_ylim(self.linesvert.y_min, self.linesvert.y_max)
-                
-              self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
-              
-          self.figure1.canvas.draw()
-    
-              
-          self.ax2.clear()
-          self.ax2.grid(True)
-    
-         
-          if self.selected_fx_option == "sen(x)":
-                function = self.graph.calcular_sen
-          elif self.selected_fx_option == "cos(x)":
-                function = self.graph.calcular_cos
-          elif self.selected_fx_option == "exp(x)":
-                function = self.graph.calcular_exp
-          else:
-                function = self.graph.calcular_z_mais_1_por_z
+            if self.selected_fx_option == "sen(x)":
+                  function = self.graph.calcular_sen
+            elif self.selected_fx_option == "cos(x)":
+                  function = self.graph.calcular_cos
+            elif self.selected_fx_option == "exp(x)":
+                  function = self.graph.calcular_exp
+            else:
+                  function = self.graph.calcular_z_mais_1_por_z
 
-          
-            
-          
-          x, y = self.linesvert.get_pointsvert()
-          xs, ys = function(x, y)
-          z, m = self.lineshor.get_pointshor()
-          zs, ms = function(z, m)
-          
-          lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
-          self.ax2.add_collection(lc_verticais)
-          self.ax2.add_collection(lc_horizontais)
-          self.ax2.plot([], [], ' ', label="Transformação f(z)")
-          self.ax2.legend()
-          self.figure2.canvas.draw()
+            x, y = self.linesvert.get_pointsvert()
+            xs, ys = function(x, y)
+            z, m = self.lineshor.get_pointshor()
+            zs, ms = function(z, m)
+
+            lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+            self.ax2.add_collection(lc_verticais)
+            self.ax2.add_collection(lc_horizontais)
+            self.ax2.plot([], [], ' ', label="Transformação f(z)")
+            self.ax2.legend()
+            self.figure2.canvas.draw()
 
 
 def main():

@@ -44,7 +44,8 @@ class Lines(QWidget):
         num_hor = int((self.y_max - self.y_min) / self.spacing) + 1
         self.lines_hor = np.linspace(self.y_min, self.y_max , num_hor)
         self.num_pontos = self.calcula_num_pontos()
-        self.ax.lines.clear()
+        for line in self.ax.lines[:]:
+            line.remove()
         
         self.create_horizontal_lines()
         
@@ -55,7 +56,8 @@ class Lines(QWidget):
         num_vert = int((self.x_max - self.x_min) / self.spacing) + 1
         self.lines_vert = np.linspace(self.x_min, self.x_max , num_vert)
         self.num_pontos = self.calcula_num_pontos()
-        self.ax.lines.clear()
+        for line in self.ax.lines[:]:
+            line.remove()
      
         
         self.create_vertical_lines()
