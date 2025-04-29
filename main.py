@@ -112,7 +112,12 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(canvas1)
         
         if self.selected_figure_option == "Grelhas":
-            self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas = 1, 5, 1, 4, 12
+            self.figure3 = Figure()  
+            self.canvas3 = FigureCanvas(self.figure3)
+            self.canvas3.setVisible(False)
+            self.layout.addWidget(self.canvas3)
+            
+            self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas = -1, 2, 0, 3, 12
             
 
             self.lines = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas)
