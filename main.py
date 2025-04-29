@@ -116,13 +116,12 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.canvas3)
         
         if self.selected_figure_option == "Grelhas":
-            self.x_min, self.x_max, self.y_min, self.y_max, self.spacing = -1, 2, 0, 3, 0.25
+            self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas = 1, 5, 1, 4, 12
             
 
-            self.linesvert = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, self.spacing, 'red')
-            self.lineshor = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, self.spacing, 'blue')
-            self.linesvert.create_vertical_lines()
-            self.lineshor.create_horizontal_lines()
+            self.lines = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas)
+            self.lines.create_vertical_lines()
+            self.lines.create_horizontal_lines()
 
             self.ax1.set_xlim(self.x_min, self.x_max)
             self.ax1.set_ylim(self.y_min, self.y_max)
@@ -175,12 +174,12 @@ class MainWindow(QMainWindow):
                 xs, ys = self.graph.calcular_sen(x, y)
                 self.ax2.plot(xs, ys, label="sen(z)", color='purple')
             elif self.selected_figure_option == "Grelhas":
-                x, y = self.linesvert.get_pointsvert()
+                x, y = self.lines.get_pointsvert()
                 xs, ys = self.graph.calcular_sen(x, y)
-                z, m = self.lineshor.get_pointshor()
+                z, m = self.lines.get_pointshor()
                 zs, ms = self.graph.calcular_sen(z, m)
 
-                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+                lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
@@ -197,12 +196,12 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
             elif self.selected_figure_option == "Grelhas":
-                x, y = self.linesvert.get_pointsvert()
+                x, y = self.lines.get_pointsvert()
                 xs, ys = self.graph.calcular_cos(x, y)
-                z, m = self.lineshor.get_pointshor()
+                z, m = self.lines.get_pointshor()
                 zs, ms = self.graph.calcular_cos(z, m)
 
-                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+                lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
@@ -219,13 +218,13 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_exp(x,y)
                 self.ax2.plot(xs, ys, label="exp(z)", color='red')
             elif self.selected_figure_option == "Grelhas":
-                x,y = self.linesvert.get_pointsvert()
+                x,y = self.lines.get_pointsvert()
                 xs,ys = self.graph.calcular_exp(x,y)     
-                z,m = self.lineshor.get_pointshor()
+                z,m = self.lines.get_pointshor()
                 zs,ms = self.graph.calcular_exp(z,m)    
                 
 
-                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+                lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
@@ -242,14 +241,11 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
                 self.ax2.plot(xs, ys, label="z + 1/z", color='orange')
             elif self.selected_figure_option == "Grelhas":
-                x,y = self.linesvert.get_pointsvert()
+                x,y = self.lines.get_pointsvert()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
-                
-                z,m = self.lineshor.get_pointshor()
-                zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)
-                
-
-                lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+                z,m = self.lines.get_pointshor()
+                zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)               
+                lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
@@ -311,11 +307,11 @@ class MainWindow(QMainWindow):
         self.slider_ax2 = self.figure3.add_axes([0.1, 0.2, 0.8, 0.3]) 
         
         if opcao == "Alterar tamanho Reta Horizontal":
-            valinit = (self.lineshor.x_min, self.lineshor.x_max)
-            range_min, range_max = self.lineshor.x_min, self.lineshor.x_max
+            valinit = (self.lines.x_min, self.lines.x_max)
+            range_min, range_max = self.lines.x_min, self.lines.x_max
         elif opcao == "Alterar tamanho Reta Vertical":
-            valinit = (self.linesvert.y_min, self.linesvert.y_max)
-            range_min, range_max = self.linesvert.y_min, self.linesvert.y_max
+            valinit = (self.lines.y_min, self.lines.y_max)
+            range_min, range_max = self.lines.y_min, self.lines.y_max
         else:
             return
 
@@ -335,18 +331,16 @@ class MainWindow(QMainWindow):
         self.slider_ax3 = self.figure3.add_axes([0.1, 0.05, 0.8, 0.1])  
     
         if opcao == "Espaçamento Horizontal":
-           valinit_aux = self.lineshor.spacing
-           self.numero_linhas = (self.lineshor.x_max - self.lineshor.x_min) / self.spacing
+           valinit_aux = self.lines.numero_linhas_h
            
            label = "Espaçamento Horizontal"
         elif opcao == "Espaçamento Vertical":
-           valinit_aux = self.linesvert.spacing
-           self.numero_linhas = (self.linesvert.y_max - self.linesvert.y_min) / self.spacing
+           valinit_aux = self.lines.numero_linhas_v
            label = "Espaçamento Vertical"
         else:
             return
         
-        self.slider_spacing = Slider(self.slider_ax3, label, 1, 20, valinit=self.numero_linhas, valstep=1)
+        self.slider_spacing = Slider(self.slider_ax3, label, 1, 20, valinit=valinit_aux, valstep=1)
         self.slider_spacing.on_changed(lambda val: self.update_spacing(val, opcao))
     
         self.canvas3.draw()
@@ -354,21 +348,19 @@ class MainWindow(QMainWindow):
 
        
     def update_spacing(self, val, tipo):
-        """Atualiza o espaçamento horizontal ou vertical diretamente"""
+       
         if tipo == "Espaçamento Horizontal":
-            self.numero_linhas = val
-            self.lineshor.spacing = (self.lineshor.x_max - self.lineshor.x_min) / self.numero_linhas
-            self.lineshor.clear_lines()  
-            self.lineshor.update_lineshori(self.lineshor.spacing)
-            self.linesvert.create_vertical_lines() 
-            self.ax1.set_xlim(self.lineshor.x_min, self.lineshor.x_max)
+            self.lines.numero_linhas_h = val
+            self.lines.clear_lines()  
+            self.lines.create_horizontal_lines()
+            self.lines.create_vertical_lines() 
+            self.ax1.set_xlim(self.lines.x_min, self.lines.x_max)
         elif tipo == "Espaçamento Vertical":
-            self.numero_linhas = val
-            self.linesvert.spacing = (self.linesvert.y_max - self.linesvert.y_min) / self.numero_linhas
-            self.linesvert.clear_lines() 
-            self.linesvert.update_linesvert(self.linesvert.spacing)
-            self.lineshor.create_horizontal_lines()
-            self.ax1.set_ylim(self.linesvert.y_min, self.linesvert.y_max)
+            self.lines.numero_linhas_v = val
+            self.lines.clear_lines() 
+            self.lines.create_vertical_lines()
+            self.lines.create_horizontal_lines()
+            self.ax1.set_ylim(self.lines.y_min, self.lines.y_max)
         self.figure1.canvas.draw()
 
         self.ax2.clear()
@@ -384,12 +376,12 @@ class MainWindow(QMainWindow):
         else:
             function = self.graph.calcular_z_mais_1_por_z
 
-        x, y = self.linesvert.get_pointsvert()
+        x, y = self.lines.get_pointsvert()
         xs, ys = function(x, y)
-        z, m = self.lineshor.get_pointshor()
+        z, m = self.lines.get_pointshor()
         zs, ms = function(z, m)
 
-        lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+        lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
         self.ax2.add_collection(lc_verticais)
         self.ax2.add_collection(lc_horizontais)
         self.ax2.plot([], [], ' ', label="Transformação f(z)")
@@ -400,27 +392,20 @@ class MainWindow(QMainWindow):
         """Atualiza o tamanho das linhas e atualiza os gráficos"""
         if self.selected_figure_option == "Grelhas":
             if opcao == "Alterar tamanho Reta Horizontal":
-                self.lineshor.x_min, self.lineshor.x_max = self.slider_length.val
-                self.linesvert.x_min, self.linesvert.x_max = self.slider_length.val
-                for line in self.ax1.lines[:]:
-                    line.remove()
-
-                self.lineshor.create_horizontal_lines()
-                self.linesvert.create_vertical_lines()
-
-                self.ax1.set_xlim(self.lineshor.x_min, self.lineshor.x_max)
-                self.ax1.set_ylim(self.lineshor.y_min, self.lineshor.y_max)  
+                self.lines.x_min, self.lines.x_max = self.slider_length.val
+                
+                
             elif opcao == "Alterar tamanho Reta Vertical":
-                self.linesvert.y_min, self.linesvert.y_max = self.slider_length.val
-                self.lineshor.y_min, self.lineshor.y_max = self.slider_length.val 
-                for line in self.ax1.lines[:]:
-                    line.remove()
-                    
-                self.linesvert.create_vertical_lines()
-                self.lineshor.create_horizontal_lines()
-                self.ax1.set_ylim(self.linesvert.y_min, self.linesvert.y_max)
+                self.lines.y_min, self.lines.y_max = self.slider_length.val
+                
+                
+            for line in self.ax1.lines[:]:
+                    line.remove()      
+            self.lines.create_vertical_lines()
+            self.lines.create_horizontal_lines()
+            self.ax1.set_xlim(self.lines.x_min, self.lines.x_max)
+            self.ax1.set_ylim(self.lines.y_min, self.lines.y_max)
 
-                self.ax1.set_xlim(self.linesvert.x_min, self.linesvert.x_max)
               
             self.figure1.canvas.draw()
               
@@ -436,12 +421,12 @@ class MainWindow(QMainWindow):
             else:
                   function = self.graph.calcular_z_mais_1_por_z
 
-            x, y = self.linesvert.get_pointsvert()
+            x, y = self.lines.get_pointsvert()
             xs, ys = function(x, y)
-            z, m = self.lineshor.get_pointshor()
+            z, m = self.lines.get_pointshor()
             zs, ms = function(z, m)
 
-            lc_verticais, lc_horizontais = self.linesvert.plot_on_ax2(self.ax2, xs, ys, zs, ms)
+            lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
             self.ax2.add_collection(lc_verticais)
             self.ax2.add_collection(lc_horizontais)
             self.ax2.plot([], [], ' ', label="Transformação f(z)")
