@@ -117,7 +117,7 @@ class MainWindow(QMainWindow):
             self.canvas3.setVisible(False)
             self.layout.addWidget(self.canvas3)
             
-            self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas = -1, 2, 0, 3, 12
+            self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas = 1, 4, 0, 3, 12
             
 
             self.lines = l.Lines(self.ax1, self.x_min, self.x_max, self.y_min, self.y_max, self.numero_linhas)
