@@ -13,6 +13,7 @@ import circumference as c
 import rectangle as r
 import graphic as g
 import lines as l
+import draw as d
 from matplotlib.collections import LineCollection
 
 
@@ -169,7 +170,9 @@ class MainWindow(QMainWindow):
             canvas1.mpl_connect("motion_notify_event", self.circumference.on_mouse_move)
 
         elif self.selected_figure_option == "Desenhar":
-            self.ax1.text(0.5, 0.5, "Modo de Desenho", fontsize=14, ha='center')
+            self.draw_mode = d.Draw(self.ax1, canvas1)
+            plt.subplots_adjust(bottom=0.2)
+            
 
         canvas1.draw()
         self.ax1.set_aspect('equal')
@@ -200,6 +203,8 @@ class MainWindow(QMainWindow):
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="sen(z)")  
+            elif self.selected_figure_option == "Desenhar":
+                canvas1.mpl_connect('key_press_event', self.onkey) 
             else:
                 self.ax2.plot(x, np.sin(x), label="sen(x)", color='blue')
         elif self.selected_fx_option == "cos(x)":
@@ -222,6 +227,8 @@ class MainWindow(QMainWindow):
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="cos(z)")
+            elif self.selected_figure_option == "Desenhar":
+                canvas1.mpl_connect('key_press_event', self.onkey)
             else:
                 self.ax2.plot(x, np.cos(x), label="cos(x)", color='green')   
         elif self.selected_fx_option == "exp(x)":
@@ -244,7 +251,9 @@ class MainWindow(QMainWindow):
 
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
-                self.ax2.plot([], [], ' ', label="exp(z)")     
+                self.ax2.plot([], [], ' ', label="exp(z)")   
+            elif self.selected_figure_option == "Desenhar":
+                canvas1.mpl_connect('key_press_event', self.onkey)  
             else:
                 self.ax2.plot(x, np.exp(x), label="exp(x)", color='red')
         elif self.selected_fx_option == "z + 1/z":
@@ -269,12 +278,41 @@ class MainWindow(QMainWindow):
                 self.ax2.add_collection(lc_verticais)
                 self.ax2.add_collection(lc_horizontais)
                 self.ax2.plot([], [], ' ', label="z + 1/z")
+            elif self.selected_figure_option == "Desenhar":
+                canvas1.mpl_connect('key_press_event', self.onkey)
             else:
                 self.ax2.plot(x, x + 1/x, label="z + 1/z", color='orange')
 
         self.ax2.set_aspect('equal')
         self.ax2.legend()
         canvas2.draw()
+
+    def onkey(self, event):
+        if event.key == 'enter':
+            self.ax2.clear()
+            if self.selected_fx_option == "sen(x)":
+                x, y = self.draw_mode.get_points()
+                xs, ys = self.graph.calcular_sen(x, y)
+                for x_seg, y_seg in zip(xs, ys):
+                    self.ax2.plot(x_seg, y_seg, color='purple')
+
+            elif self.selected_fx_option == "cos(x)":
+                x, y = self.draw_mode.get_points()
+                xs, ys = self.graph.calcular_cos(x, y)
+                for x_seg, y_seg in zip(xs, ys):
+                    self.ax2.plot(x_seg, y_seg, color='green')
+            elif self.selected_fx_option == "exp(x)":
+                x, y = self.draw_mode.get_points()
+                xs, ys = self.graph.calcular_exp(x, y)
+                for x_seg, y_seg in zip(xs, ys):
+                    self.ax2.plot(x_seg, y_seg, color='red')
+            elif self.selected_fx_option == "z + 1/z":
+                x, y = self.draw_mode.get_points()
+                xs, ys = self.graph.calcular_z_mais_1_por_z(x, y)
+                for x_seg, y_seg in zip(xs, ys):
+                    self.ax2.plot(x_seg, y_seg, color='orange')
+            self.ax2.set_aspect('equal')
+            self.ax2.figure.canvas.draw()
     
     def add_sliders(self):
         self.figure3.clear()
