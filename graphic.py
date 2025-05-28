@@ -11,11 +11,5 @@ class Graphic:
     def calcular_exp(self, x,y):
         return np.exp(x) * np.cos(y), np.exp(x) * np.sin(y)
 
-
     def calcular_z_mais_1_por_z(self, x, y):
-        denom = x**2 + y**2
-        if np.any(denom == 0):
-            denom = np.where(denom == 0, 1e-10, denom) 
-        return x * (denom + 1) / denom, y * (denom - 1) / denom
-
-
+        return x * (x ** 2 + y ** 2 + 1) / (x ** 2 + y ** 2), y * (x ** 2 + y ** 2 - 1) / (x ** 2 + y ** 2)
