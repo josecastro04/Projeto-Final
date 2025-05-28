@@ -19,19 +19,4 @@ class Graphic:
         return x * (denom + 1) / denom, y * (denom - 1) / denom
 
 
-    ##  1/z
-    ## 1 /z²
-    ## z^2
-    def calcular_1_por_z(self, x, y):
-        denom = x**2 + y**2
-        if np.any(denom == 0):
-            denom = np.where(denom == 0, 1e-10, denom) 
-        return x / denom, -y / denom
-    def calcular_1_por_z2(self, x, y):
-        denom = (x**2 + y**2)**2
-        if np.any(denom == 0):
-            denom = np.where(denom == 0, 1e-10, denom) 
-        return x / denom, -y / denom
-    def calcular_z2(self, x, y):
-        return x**2 - y**2, 2 * x * y
         

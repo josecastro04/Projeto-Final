@@ -131,14 +131,29 @@ class MainWindow(QMainWindow):
             self.add_sliders()
             self.show()
         elif self.selected_figure_option == "Retângulo":
-            self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red')
+            self.rectangle = r.Rect(self.ax1, 0.1, 0.1, 0.5, 0.3, 'red', self)
+            
+            self.input_layout = QHBoxLayout()
+            center_input, width_input, height_input = self.rectangle.get_input()
+            
+            self.input_layout.addWidget(QLabel("Centro:"))
+            self.input_layout.addWidget(center_input)
+            
+            self.input_layout.addWidget(QLabel("Largura:"))
+            self.input_layout.addWidget(width_input)
+            
+            self.input_layout.addWidget(QLabel("Altura"))
+            self.input_layout.addWidget(height_input)
+            
+            self.layout.addLayout(self.input_layout)
+            self.show()
      
             canvas1.mpl_connect("button_press_event", self.rectangle.on_button_press)
             canvas1.mpl_connect("button_release_event", self.rectangle.on_button_release)
             canvas1.mpl_connect("motion_notify_event", self.rectangle.on_mouse_move)
 
         elif self.selected_figure_option == "Circunferência":
-            self.circumference = c.Circumference(self.ax1, -0.1, 0.5, 1, 'red')
+            self.circumference = c.Circumference(self.ax1, -0.1, 0.5, 1, 'red', self)
             self.input_layout = QHBoxLayout()
             self.input_layout.addWidget(QLabel("Centro:"))
             center_input, radius_input = self.circumference.get_input()
@@ -197,7 +212,7 @@ class MainWindow(QMainWindow):
                 xs,ys = self.graph.calcular_cos(x,y)
                 self.ax2.plot(xs, ys, label="cos(z)", color='green')
             elif self.selected_figure_option == "Grelhas":
-                x, y = self.lines.get_pointsvert()
+                x,y = self.lines.get_pointsvert()
                 xs, ys = self.graph.calcular_cos(x, y)
                 z, m = self.lines.get_pointshor()
                 zs, ms = self.graph.calcular_cos(z, m)
@@ -244,8 +259,11 @@ class MainWindow(QMainWindow):
             elif self.selected_figure_option == "Grelhas":
                 x,y = self.lines.get_pointsvert()
                 xs,ys = self.graph.calcular_z_mais_1_por_z(x, y)
+                
                 z,m = self.lines.get_pointshor()
-                zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)               
+                zs,ms = self.graph.calcular_z_mais_1_por_z(z,m)
+                
+
                 lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
 
                 self.ax2.add_collection(lc_verticais)
@@ -354,7 +372,7 @@ class MainWindow(QMainWindow):
 
        
     def update_spacing(self, val, tipo):
-       
+
         if tipo == "Espaçamento Horizontal":
             self.lines.numero_linhas_h = val
             self.lines.clear_lines()  
@@ -395,7 +413,7 @@ class MainWindow(QMainWindow):
         self.figure2.canvas.draw()
 
     def update_lines(self, val,opcao):
-        """Atualiza o tamanho das linhas e atualiza os gráficos"""
+    
         if self.selected_figure_option == "Grelhas":
             if opcao == "Alterar tamanho Reta Horizontal":
                 self.lines.x_min, self.lines.x_max = self.slider_length.val
@@ -411,22 +429,35 @@ class MainWindow(QMainWindow):
             self.lines.create_horizontal_lines()
             self.ax1.set_xlim(self.lines.x_min, self.lines.x_max)
             self.ax1.set_ylim(self.lines.y_min, self.lines.y_max)
-
               
             self.figure1.canvas.draw()
-              
-            self.ax2.clear()
-            self.ax2.grid(True)
+        
+        self.update_second_graph()
 
-            if self.selected_fx_option == "sen(x)":
-                  function = self.graph.calcular_sen
-            elif self.selected_fx_option == "cos(x)":
-                  function = self.graph.calcular_cos
-            elif self.selected_fx_option == "exp(x)":
-                  function = self.graph.calcular_exp
-            else:
-                  function = self.graph.calcular_z_mais_1_por_z
 
+    def update_second_graph(self):
+
+        self.ax2.clear()
+        self.ax2.grid(True)
+
+        if self.selected_fx_option == "sen(x)":
+            function = self.graph.calcular_sen
+        elif self.selected_fx_option == "cos(x)":
+            function = self.graph.calcular_cos
+        elif self.selected_fx_option == "exp(x)":
+            function = self.graph.calcular_exp
+        else:
+            function = self.graph.calcular_z_mais_1_por_z
+
+        if self.selected_figure_option == "Circunferência":
+            x, y = self.circumference.get_points()
+            xs, ys = function(x, y)
+            self.ax2.plot(xs, ys, label=f"{self.selected_fx_option}(z)", color='purple')
+        elif self.selected_figure_option == "Retângulo":
+            x, y = self.rectangle.get_points()
+            xs, ys = function(x, y)
+            self.ax2.plot(xs, ys, label=f"{self.selected_fx_option}(z)", color='green')
+        elif self.selected_figure_option == "Grelhas":
             x, y = self.lines.get_pointsvert()
             xs, ys = function(x, y)
             z, m = self.lines.get_pointshor()
@@ -435,10 +466,15 @@ class MainWindow(QMainWindow):
             lc_verticais, lc_horizontais = self.lines.plot_on_ax2(self.ax2, xs, ys, zs, ms)
             self.ax2.add_collection(lc_verticais)
             self.ax2.add_collection(lc_horizontais)
-            self.ax2.plot([], [], ' ', label="Transformação f(z)")
-            self.ax2.legend()
-            self.figure2.canvas.draw()
+            self.ax2.plot([], [], ' ', label=f"{self.selected_fx_option}(z)")
+        else:
+            x = np.linspace(-5, 5, 100)
+            y = function(x)
+            self.ax2.plot(x, y, label=f"{self.selected_fx_option}(x)", color='blue')
 
+        self.ax2.set_aspect('equal')
+        self.ax2.legend()
+        self.figure2.canvas.draw()
 
 def main():
     app = QApplication(sys.argv)

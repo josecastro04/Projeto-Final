@@ -1,15 +1,17 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.patches import Circle
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu, QMenuBar, QAction, QVBoxLayout, QWidget, QPushButton, QMessageBox, QLabel, QLineEdit, QHBoxLayout
+from PyQt5.QtWidgets import QLineEdit
+import re
 
 class Circumference:
-    def __init__(self, ax, x, y, radius, color):
+    def __init__(self, ax, x, y, radius, color, main_window):
         self.ax = ax
         self.x = x
         self.y = y
         self.radius = radius
         self.color = color
+        self.main_window = main_window
 
         self.circle = Circle((self.x, self.y), self.radius, color=self.color, fill=False)
         self.ax.add_patch(self.circle)
@@ -77,13 +79,16 @@ class Circumference:
         self.control_point.set_xdata([self.point_x])
         self.control_point.set_ydata([self.point_y])
         
+        self.main_window.update_second_graph()
+        
         plt.draw()
 
     def update_center(self):
-        values = [v.strip() for v in self.center_input.text().split(',')]
 
-        if '' in values or '-' in values or len(values) < 2:
+        if not re.match(r'^-?\d+(\.\d+)?,-?\d+(\.\d+)?$', self.center_input.text()):
             return
+        
+        values = [v.strip() for v in self.center_input.text().split(',')]
 
         self.x = float(values[0])
         self.y = float(values[1])
@@ -94,13 +99,14 @@ class Circumference:
         self.point_y = self.y + np.sin(np.pi / 4) * self.radius
         self.control_point.set_xdata([self.point_x])
         self.control_point.set_ydata([self.point_y])
+        self.main_window.update_second_graph()
 
         plt.draw()
 
     def update_radius(self):
         value = self.radius_input.text().strip()
 
-        if '' == value or '-' in value:
+        if not re.match(r'^(0\.\d+|[1-9]\d*(\.\d+)?)$', value) :
             return
 
         self.radius = float(value)
@@ -109,10 +115,10 @@ class Circumference:
         self.point_y = self.y + np.sin(np.pi / 4) * self.radius
         self.control_point.set_xdata([self.point_x])
         self.control_point.set_ydata([self.point_y])
+        self.main_window.update_second_graph()
 
         plt.draw()
 
     def get_points(self):
-        t = np.linspace(0, 2 * np.pi, 100)
+        t = np.linspace(0, 2 * np.pi, 500)
         return self.x + np.cos(t) * self.radius, self.y + np.sin(t) * self.radius
-
